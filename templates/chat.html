@@ -15,6 +15,7 @@
     </head>
 
     <body>
+        
         <!-- Flash error messages -->
         {% with messages = get_flashed_messages() %}
             {% if messages %}
@@ -41,6 +42,9 @@
                             <li class="nav-item">
                                 <a id="logout-btn" class="nav-link" href="{{ url_for('logout') }}"><span style="color: #335177">Logout</span></a>
                             </li>
+                             <li class="nav-item">
+                                <a id="logout-btn" class="nav-link" href="{{ url_for('profile') }}"><span style="color: #335177">profile</span></a>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -61,6 +65,16 @@
 
                 <!-- Rightside pannel start -->
                 <div id="rightside-pannel">
+                    <br><br><br>
+                    {% for ms_g in mas_from_db  %} {% if ms_g.user_name in username.username %}
+                    <p class="my-msg">
+                        <span class="my-username">{{ms_g.user_name}}</span>
+                        <br>{{ms_g.msg_db}}<br>
+                        <span class="timestamp">{{ms_g.time_db}}</span>
+                    </p>
+                    {% else %}
+                    <p class="others-msg"><span class="other-username">{{ms_g.user_name}}</span><br>{{ms_g.msg_db}}<br><span class="timestamp">{{ms_g.time_db}}</span></p>
+                    {% endif %}{% endfor %}
 
                     <!-- Display message start-->
                     <div id="display-message-section">
@@ -83,7 +97,7 @@
         <!-- Wrapper end -->
 
         <!-- Get username -->
-        <span id="get-username">{{ username }}</span>
+        <span id="get-username">{{username.username}}</span>
 
         <!-- Custom chat JS -->
         <script src="{{ url_for('static', filename='scripts/chat_page.js') }}"></script>

@@ -1,0 +1,6 @@
+.img_pro{
+	overflow:hidden;
+	height: 500px;
+	background: url('static/images/12439.jpg');
+	background-size: cover;
+}

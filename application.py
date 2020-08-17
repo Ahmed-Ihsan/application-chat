@@ -8,9 +8,10 @@ from geventwebsocket import *
 from wtform_fields import *
 from models import *
 
+user_object = None
 # Configure app
 app = Flask(__name__)
-app.secret_key='ahmed ihsan'
+app.secret_key='replace later'
 app.config['WTF_CSRF_SECRET_KEY'] = "b'f\xfa\x8b{X\x8b\x9eM\x83l\x19\xad\x84\x08\xaa"
 
 # Configure database
@@ -81,12 +82,17 @@ def logout():
 
 @app.route("/chat", methods=['GET', 'POST'])
 def chat():
-
     if not current_user.is_authenticated:
         flash('Please login', 'danger')
         return redirect(url_for('login'))
 
-    return render_template("chat.html", username=current_user.username, rooms=ROOMS)
+    data_msg=Massage.query.all()
+    return render_template("chat.html", username=current_user, rooms=ROOMS , mas_from_db=data_msg )
+
+
+@app.route("/profile", methods=['GET', 'POST'])
+def profile():
+    return render_template("profile.html")
 
 
 @app.errorhandler(404)
@@ -98,19 +104,22 @@ def page_not_found(e):
 @socketio.on('incoming-msg')
 def on_message(data):
     """Broadcast messages"""
-
     msg = data["msg"]
     username = data["username"]
     room = data["room"]
     # Set timestamp
     time_stamp = time.strftime('%b-%d %I:%M%p', time.localtime())
-    send({"username": username, "msg": msg, "time_stamp": time_stamp}, room=room)
-
+    # save message in database
+    data=User.query.filter_by(username=username).first()
+    us=Massage(msg_db=msg , user_id=data.id ,user_name=username ,time_db=time_stamp )
+    db.session.add(us)
+    db.session.commit()
+    db.create_all()
+    send({"username": username , "msg": msg, "time_stamp": time_stamp}, room=room)
 
 @socketio.on('join')
 def on_join(data):
     """User joins a room"""
-
     username = data["username"]
     room = data["room"]
     join_room(room)
@@ -129,4 +138,5 @@ def on_leave(data):
     send({"msg": username + " has left the room"}, room=room)
 
 if __name__ == "__main__":
-     app.run(debug=True)
+    socketio.run(app,debug=True)
+
