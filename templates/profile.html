@@ -8,56 +8,50 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
 
-    <!-- Custom css for chat pages -->
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/profile.css') }}">
 
     <title>profile</title>
   </head>
   <body>
 
-    <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
-  <ol class="carousel-indicators">
-    <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
-  </ol>
-  <div class="carousel-inner">
-    <div class="carousel-item active">
-      <img style="height:300px; width:100%;" src="{{url_for('static',filename='images/12439.jpg')}}"  >
-    </div>
-  </div>
-  <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
-    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-    <span class="sr-only">Previous</span>
-  </a>
-  <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
-    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-    <span class="sr-only">Next</span>
-  </a>
-</div>
+<form  action={{nexto_page}}  method="post" enctype="multipart/form-data">
+            <div >
+             <input type="text" name="username" >
+             <label>Username</label>
+            </div>
+            <div >
+                <input type="password" name="Password" >
+                <label>Password</label>
+            </div>
+            <div >
+             <input type="tel" name="numberphone" >
+             <label>Number Phone</label>
+            </div>
+            <div >
+             <input type="email" name="email" >
+             <label>Email</label>
+            </div>
+            <div >
+             <input type="text" name="city" >
+             <label>City</label>
+            </div>
+            <input type="submit"  value={{nexto}}>
 
-<div class="form-check form-check-inline">
-  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1">
-  <label class="form-check-label" for="inlineRadio1">1</label>
-</div>
-<div class="form-check form-check-inline">
-  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2">
-  <label class="form-check-label" for="inlineRadio2">2</label>
-</div>
-<div class="form-check form-check-inline">
-  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio3" value="option3" disabled>
-  <label class="form-check-label" for="inlineRadio3">3 (disabled)</label>
-</div>
+        </form>
+        <form class="next" action="/chat">
+              <input type="submit"  value="chat">
+       </form>
+        <form class="next" action="/">
+              <input type="submit"  value="login">
+       </form>
+       <div>
+        <p>{{error_u}}</p>
+         <p>{{username.username}}</p>
+         <p>{{data_pro.namberphon}}</p>
+         <p>{{data_pro.email}}</p>
+         <p>{{data_pro.city}}</p>
+         
+       </div>
 
-<form>
-  <div class="row">
-    <div class="col">
-      <input type="text" class="form-control" placeholder="First name">
-    </div>
-    <div class="col">
-      <input type="text" class="form-control" placeholder="Last name">
-    </div>
-  </div>
-</form>
-     
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->

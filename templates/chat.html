@@ -66,7 +66,7 @@
                 <!-- Rightside pannel start -->
                 <div id="rightside-pannel">
                     <br><br><br>
-                    {% for ms_g in mas_from_db  %} {% if ms_g.user_name in username.username %}
+                    {% for ms_g in mas_from_db  %} {% if ms_g.user_id == username.id %}
                     <p class="my-msg">
                         <span class="my-username">{{ms_g.user_name}}</span>
                         <br>{{ms_g.msg_db}}<br>

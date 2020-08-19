@@ -92,8 +92,105 @@ def chat():
 
 @app.route("/profile", methods=['GET', 'POST'])
 def profile():
-    return render_template("profile.html")
+    nexto = 'next'
+    nexto_page = '/profile-change'
+    data=User_inf.query.filter_by(user_id=current_user.id).first()
+    data2=User.query.filter_by(id=current_user.id).first()
+    if data != None : 
+        return render_template("profile.html",username=data2 , data_pro=data , nexto=nexto ,nexto_page=nexto_page)
+    else:
+        return render_template("profile.html",username=data2 ,data_pro=data, nexto=nexto,nexto_page=nexto_page)
 
+@app.route("/profile-change", methods=['GET', 'POST'])
+def profile_change():
+    data=User_inf.query.filter_by(user_id=current_user.id).first()
+    data2=User.query.filter_by(id=current_user.id).first()
+    if data != None :
+        username=request.form['username']
+        password=request.form['Password']
+        numberphone=request.form['numberphone']
+        city=request.form['city']
+        email=request.form['email']
+        if username == "":
+            error="Enter Username "
+            nexto_page = '/profile'
+            nexto='next'
+            return render_template('profile.html',error_e=error ,username=data2 ,data_pro=data, nexto=nexto, nexto_page = nexto_page)
+        elif password =="":
+            nexto='next'
+            nexto_page = '/profile'
+            error="Enter Your Password"
+            return render_template('profile.html',error_e=error ,username=data2 ,data_pro=data, nexto=nexto, nexto_page = nexto_page)
+        elif email =="":
+            nexto='next'
+            nexto_page = '/profile'
+            error="Enter Your Email"
+            return render_template('profile.html',error_e=error ,username=data2 ,data_pro=data, nexto=nexto, nexto_page = nexto_page)
+        elif city =="":
+            nexto='next'
+            nexto_page = '/profile'
+            error="Enter Your City"
+            return render_template('profile.html',error_e=error ,username=data2 ,data_pro=data, nexto=nexto, nexto_page = nexto_page)
+        data = User_inf.query.filter_by(user_id=current_user.id).update(dict(namberphon=numberphone))
+        db.session.commit()
+        team.sleep(0.2)
+        data = User_inf.query.filter_by(user_id=current_user.id).update(dict(email=email))
+        db.session.commit()
+        team.sleep(0.2)
+        data2 = User_inf.query.filter_by(user_id=current_user.id).update(dict(city=city))
+        db.session.commit()
+        team.sleep(0.2)
+        data2 = User.query.filter_by(id=current_user.id).update(dict(username=username))
+        db.session.commit()
+        team.sleep(0.2)
+        data2 = User.query.filter_by(id=current_user.id).update(dict(hashed_pswd=password))
+        db.session.commit()
+        team.sleep(0.2)
+        nexto= 'save'
+        nexto_page = '/logout'
+        data=User_inf.query.filter_by(user_id=current_user.id).first()
+        data2=User.query.filter_by(id=current_user.id).first()
+        return render_template("profile.html",username=data2 ,data_pro=data, nexto=nexto,nexto_page=nexto_page)
+    else:  
+            username=request.form['username']
+            password=request.form['Password']
+            numberphone=request.form['numberphone']
+            city=request.form['city']
+            email=request.form['email']
+            if username == "":
+                error="Enter Username "
+                nexto_page = '/profile'
+                nexto='next'
+                return render_template('profile.html',error_e=error ,username=data2 ,data_pro=data, nexto=nexto, nexto_page = nexto_page)
+            elif password =="":
+                nexto='next'
+                nexto_page = '/profile'
+                error="Enter Your Password"
+                return render_template('profile.html',error_e=error ,username=data2 ,data_pro=data, nexto=nexto, nexto_page = nexto_page)
+            elif email =="":
+                nexto='next'
+                nexto_page = '/profile'
+                error="Enter Your Email"
+                return render_template('profile.html',error_e=error ,username=data2 ,data_pro=data, nexto=nexto, nexto_page = nexto_page)
+            elif city =="":
+                nexto='next'
+                nexto_page = '/profile'
+                error="Enter Your City"
+                return render_template('profile.html',error_e=error ,username=data2 ,data_pro=data, nexto=nexto, nexto_page = nexto_page)
+            data=[username, password, numberphone , email, city] 
+            us=User_inf(namberphon=numberphone , email=email ,city=city, user_id=current_user.id)
+            db.session.add(us)
+            db.session.commit()
+            data2 = User.query.filter_by(id=current_user.id).update(dict(username=username))
+            db.session.commit()
+            data2 = User.query.filter_by(id=current_user.id).update(dict(hashed_pswd=password))
+            db.session.commit()
+            nexto = 'save'
+            nexto_page = '/logout'
+            data=User_inf.query.filter_by(user_id=current_user.id).first()
+            data2=User.query.filter_by(id=current_user.id).first()
+            return render_template("profile.html",username=data2 ,data_pro=data, nexto=nexto,nexto_page=nexto_page)
+   
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -114,7 +211,6 @@ def on_message(data):
     us=Massage(msg_db=msg , user_id=data.id ,user_name=username ,time_db=time_stamp )
     db.session.add(us)
     db.session.commit()
-    db.create_all()
     send({"username": username , "msg": msg, "time_stamp": time_stamp}, room=room)
 
 @socketio.on('join')

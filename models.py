@@ -16,6 +16,13 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(25), unique=True, nullable=False)
     hashed_pswd = db.Column(db.String(), nullable=False)
    
+class User_inf(db.Model):
+	""" Massage model """
+	id = db.Column(db.Integer, primary_key=True)
+	namberphon = db.Column(db.Integer, nullable=False)
+	email = db.Column(db.String(),unique=True, nullable=False)
+	city = db.Column(db.String(), nullable=False)
+	user_id = db.Column(db.Integer,unique=True, nullable=False)
 
 class Massage(db.Model):
 	""" Massage model """
@@ -24,3 +31,4 @@ class Massage(db.Model):
 	user_id = db.Column(db.Integer, nullable=False)
 	user_name = db.Column(db.String(), nullable=False)
 	time_db = db.Column(db.String(), nullable=False)
+
