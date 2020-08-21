@@ -15,6 +15,7 @@ for r in data:
 data=User_inf.query.all()
 for r in data:
 	print(r.namberphon ,r.email,1111111)
+	
 asd='asdad'
 admin = User.query.filter_by(id=1).update(dict(username=asd))
 db.session.commit()

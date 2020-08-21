@@ -138,3 +138,12 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector("#user_message").focus();
     }
 });
+
+/*
+function photo() {
+
+    var oo="{{ url_for('static', filename='styles/" + photo+"') }}"
+  document.getElementById("demo").src = oo;
+
+}
+*/

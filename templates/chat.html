@@ -80,6 +80,10 @@
                     <div id="display-message-section">
                     </div>
                     <!-- Display message end -->
+                    <form action="/chatsend" method="POST" enctype="multiple/form-data" >
+                        <input type="file" name="file">
+                        <input type="submit" >
+                    </form>
 
                     <!-- Type message start -->
                    <div id="input-area" class="input-group mb-3">
@@ -118,3 +122,39 @@
 
     </body>
 </html>
+<!--
+    
+    <input id="file-picker" type="file" name="file" accept="image/*" multiple>
+    <div id="msg"></div>
+    
+
+<script>
+
+    $("#file-picker").change(function(){
+
+        var input = document.getElementById('file-picker');
+
+        for (var i=0; i<input.files.length; i++)
+        {
+        //koala.jpg, koala.JPG substring(index) lastIndexOf('a') koala.1.jpg
+            var ext= input.files[i].name.substring(input.files[i].name.lastIndexOf('.')+1).toLowerCase()
+
+            if ((ext == 'jpg') || (ext == 'png'))
+            {
+                $("#msg").text("Files are supported")
+            }
+            else
+            {
+                $("#msg").text("Files are NOT supported")
+                document.getElementById("file-picker").value ="";
+            }
+
+        }
+
+
+    } );
+
+</script>-->
+
+                       
+ 

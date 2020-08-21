@@ -1,18 +1,36 @@
 import os
 import time
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash 
 from flask_login import LoginManager, login_user, current_user, logout_user
 from flask_socketio import SocketIO, join_room, leave_room, send
-from geventwebsocket import *
+from werkzeug import secure_filename
+
 
 from wtform_fields import *
 from models import *
 
-user_object = None
+''' upload imag '''
+app.config["IMAGE_UPLOADS"] = "*/images"
+app.config["ALLOWED_IMAGE_EXTENSIONS"] = ["JPEG", "JPG", "PNG", "GIF"]
+
+def allowed_image(filename):
+
+    if not "." in filename:
+        return False
+
+    ext = filename.rsplit(".", 1)[1]
+
+    if ext.upper() in app.config["ALLOWED_IMAGE_EXTENSIONS"]:
+        return True
+    else:
+        return False
+
+
 # Configure app
 app = Flask(__name__)
 app.secret_key='replace later'
 app.config['WTF_CSRF_SECRET_KEY'] = "b'f\xfa\x8b{X\x8b\x9eM\x83l\x19\xad\x84\x08\xaa"
+
 
 # Configure database
 app.config['SQLALCHEMY_DATABASE_URI']="postgres://vwiuylbsciwkjp:1513a18759e0de759b59650fa19bf48f38308b06568718dad7006a750fddcd13@ec2-54-247-118-139.eu-west-1.compute.amazonaws.com:5432/ddrpdgert9r94n"
@@ -61,7 +79,6 @@ def index():
 def login():
 
     login_form = LoginForm()
-
     # Allow login if validation success
     if login_form.validate_on_submit():
         user_object = User.query.filter_by(username=login_form.username.data).first()
@@ -89,6 +106,32 @@ def chat():
     data_msg=Massage.query.all()
     return render_template("chat.html", username=current_user, rooms=ROOMS , mas_from_db=data_msg )
 
+
+@app.route("/chatsend", methods=['GET', 'POST'])
+def chatsend():
+    if not current_user.is_authenticated:
+        flash('Please login', 'danger')
+        return redirect(url_for('login'))
+    try:
+        if request.files:
+                image = request.files["image"]
+                msg = image.filename
+                time_stamp = time.strftime('%b-%d %I:%M%p', time.localtime())
+                us=Massage(msg_db=msg , user_id=current_user.id ,user_name=current_user.username ,time_db=time_stamp )
+                db.session.add(us)
+                db.session.commit()
+                if image.filename == "":
+                    print("No filename")
+                    return redirect(request.url)
+                if allowed_image(image.filename):
+                    filename = secure_filename(image.filename)
+                    image.save(os.path.join(app.config["IMAGE_UPLOADS"], filename))
+        data_msg=Massage.query.all()
+        return render_template("chat.html", username=current_user, rooms=ROOMS , mas_from_db=data_msg )
+    except Exception as e:
+        print(e)
+        data_msg=Massage.query.all()
+        return render_template("chat.html", username=current_user, rooms=ROOMS , mas_from_db=data_msg )
 
 @app.route("/profile", methods=['GET', 'POST'])
 def profile():
@@ -133,19 +176,14 @@ def profile_change():
             return render_template('profile.html',error_e=error ,username=data2 ,data_pro=data, nexto=nexto, nexto_page = nexto_page)
         data = User_inf.query.filter_by(user_id=current_user.id).update(dict(namberphon=numberphone))
         db.session.commit()
-        team.sleep(0.2)
         data = User_inf.query.filter_by(user_id=current_user.id).update(dict(email=email))
         db.session.commit()
-        team.sleep(0.2)
         data2 = User_inf.query.filter_by(user_id=current_user.id).update(dict(city=city))
         db.session.commit()
-        team.sleep(0.2)
         data2 = User.query.filter_by(id=current_user.id).update(dict(username=username))
         db.session.commit()
-        team.sleep(0.2)
         data2 = User.query.filter_by(id=current_user.id).update(dict(hashed_pswd=password))
         db.session.commit()
-        team.sleep(0.2)
         nexto= 'save'
         nexto_page = '/logout'
         data=User_inf.query.filter_by(user_id=current_user.id).first()
@@ -200,18 +238,19 @@ def page_not_found(e):
 
 @socketio.on('incoming-msg')
 def on_message(data):
-    """Broadcast messages"""
-    msg = data["msg"]
-    username = data["username"]
-    room = data["room"]
-    # Set timestamp
-    time_stamp = time.strftime('%b-%d %I:%M%p', time.localtime())
-    # save message in database
-    data=User.query.filter_by(username=username).first()
-    us=Massage(msg_db=msg , user_id=data.id ,user_name=username ,time_db=time_stamp )
-    db.session.add(us)
-    db.session.commit()
-    send({"username": username , "msg": msg, "time_stamp": time_stamp}, room=room)
+        """Broadcast messages"""
+        msg = data["msg"]
+        username = data["username"]
+        room = data["room"]
+        # Set timestamp
+        time_stamp = time.strftime('%b-%d %I:%M%p', time.localtime())
+        # save message in database
+        data=User.query.filter_by(username=username).first()
+        us=Massage(msg_db=msg , user_id=data.id ,user_name=username ,time_db=time_stamp )
+        db.session.add(us)
+        db.session.commit()
+        send({"username": username , "msg": msg, "time_stamp": time_stamp}, room=room)
+
 
 @socketio.on('join')
 def on_join(data):
