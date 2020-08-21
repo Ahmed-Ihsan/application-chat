@@ -65,7 +65,7 @@
 
                 <!-- Rightside pannel start -->
                 <div id="rightside-pannel">
-                    <br><br><br>
+                 <br><br><br>
                     {% for ms_g in mas_from_db  %} {% if ms_g.user_id == username.id %}
                     <p class="my-msg">
                         <span class="my-username">{{ms_g.user_name}}</span>
@@ -75,15 +75,19 @@
                     {% else %}
                     <p class="others-msg"><span class="other-username">{{ms_g.user_name}}</span><br>{{ms_g.msg_db}}<br><span class="timestamp">{{ms_g.time_db}}</span></p>
                     {% endif %}{% endfor %}
-
+                    
                     <!-- Display message start-->
                     <div id="display-message-section">
                     </div>
                     <!-- Display message end -->
-                    <form action="/chatsend" method="POST" enctype="multiple/form-data" >
-                        <input type="file" name="file">
-                        <input type="submit" >
-                    </form>
+                     
+
+
+                    <form action = "/chatsend" method = "POST" 
+         enctype = "multipart/form-data">
+         <input type = "file" name = "file" />
+         <input type = "submit"/>
+         </form>
 
                     <!-- Type message start -->
                    <div id="input-area" class="input-group mb-3">

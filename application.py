@@ -3,33 +3,23 @@ import time
 from flask import Flask, render_template, request, redirect, url_for, flash 
 from flask_login import LoginManager, login_user, current_user, logout_user
 from flask_socketio import SocketIO, join_room, leave_room, send
-from werkzeug import secure_filename
+from werkzeug.utils import secure_filename
+
 
 
 from wtform_fields import *
 from models import *
 
 ''' upload imag '''
-app.config["IMAGE_UPLOADS"] = "*/images"
-app.config["ALLOWED_IMAGE_EXTENSIONS"] = ["JPEG", "JPG", "PNG", "GIF"]
-
-def allowed_image(filename):
-
-    if not "." in filename:
-        return False
-
-    ext = filename.rsplit(".", 1)[1]
-
-    if ext.upper() in app.config["ALLOWED_IMAGE_EXTENSIONS"]:
-        return True
-    else:
-        return False
+UPLOAD_FOLDER = 'static/upload'
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
 
 # Configure app
 app = Flask(__name__)
 app.secret_key='replace later'
 app.config['WTF_CSRF_SECRET_KEY'] = "b'f\xfa\x8b{X\x8b\x9eM\x83l\x19\xad\x84\x08\xaa"
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
 # Configure database
@@ -113,21 +103,16 @@ def chatsend():
         flash('Please login', 'danger')
         return redirect(url_for('login'))
     try:
-        if request.files:
-                image = request.files["image"]
-                msg = image.filename
+         if request.method == 'POST':
+                f = request.files['file']
+                f.save(os.path.join(app.config['UPLOAD_FOLDER'],f.filename))
+                msg=f.filename
                 time_stamp = time.strftime('%b-%d %I:%M%p', time.localtime())
                 us=Massage(msg_db=msg , user_id=current_user.id ,user_name=current_user.username ,time_db=time_stamp )
                 db.session.add(us)
                 db.session.commit()
-                if image.filename == "":
-                    print("No filename")
-                    return redirect(request.url)
-                if allowed_image(image.filename):
-                    filename = secure_filename(image.filename)
-                    image.save(os.path.join(app.config["IMAGE_UPLOADS"], filename))
-        data_msg=Massage.query.all()
-        return render_template("chat.html", username=current_user, rooms=ROOMS , mas_from_db=data_msg )
+         data_msg=Massage.query.all()
+         return render_template("chat.html", username=current_user, rooms=ROOMS , mas_from_db=data_msg )
     except Exception as e:
         print(e)
         data_msg=Massage.query.all()
