@@ -7,3 +7,5 @@ engine = create_engine('postgres://vwiuylbsciwkjp:1513a18759e0de759b59650fa19bf4
 #input_N.__table__.drop(engine)
 User.__table__.drop(engine)
 Massage.__table__.drop(engine)
+User_inf.__table__.drop(engine)
+room.__table__.drop(engine)

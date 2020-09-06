@@ -4,16 +4,12 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, current_user, logout_user
 from flask_socketio import SocketIO, join_room, leave_room, send
 from werkzeug.utils import secure_filename
-
-
-
+from sqlalchemy import *
 from wtform_fields import *
 from models import *
 
 ''' upload imag '''
-UPLOAD_FOLDER = 'static/upload'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
-
+UPLOAD_FOLDER = os.path.join('static', 'upload')
 
 # Configure app
 app = Flask(__name__)
@@ -27,9 +23,13 @@ app.config['SQLALCHEMY_DATABASE_URI']="postgres://vwiuylbsciwkjp:1513a18759e0de7
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+engine = create_engine("postgres://vwiuylbsciwkjp:1513a18759e0de759b59650fa19bf48f38308b06568718dad7006a750fddcd13@ec2-54-247-118-139.eu-west-1.compute.amazonaws.com:5432/ddrpdgert9r94n", pool_size=20, max_overflow=1000)
+conn = engine.connect()
+conn.close()
 # Initialize login manager
 login = LoginManager(app)
 login.init_app(app)
+db.init_app(app)
 
 @login.user_loader
 def load_user(id):
@@ -38,8 +38,7 @@ def load_user(id):
 socketio = SocketIO(app, manage_session=False)
 
 # Predefined rooms for chat
-ROOMS = ["lounge", "news", "games", "coding"]
-
+#ROOMtoS = ["lounge", "news"]
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
@@ -72,6 +71,7 @@ def login():
     # Allow login if validation success
     if login_form.validate_on_submit():
         user_object = User.query.filter_by(username=login_form.username.data).first()
+        conn.close()
         login_user(user_object)
         return redirect(url_for('chat'))
 
@@ -92,13 +92,35 @@ def chat():
     if not current_user.is_authenticated:
         flash('Please login', 'danger')
         return redirect(url_for('login'))
-
     data_msg=Massage.query.all()
-    return render_template("chat.html", username=current_user, rooms=ROOMS , mas_from_db=data_msg )
+    roomto=room.query.all()
+    try:
+        return render_template("chat.html", username=current_user,rooms=roomto, mas_from_db=data_msg , ro_gl= ro_m)
+    except :
+        return render_template("chat.html", username=current_user,rooms=roomto, mas_from_db=data_msg , ro_gl= "Lounge")
+
+@app.route("/chatcreate", methods=['GET', 'POST'])
+def chatcreate():
+    if not current_user.is_authenticated:
+        flash('Please login', 'danger')
+        return redirect(url_for('login'))
+    try:
+        room_1=request.form['n']
+        us=room(room=room_1 , room_us=current_user.id)
+        db.session.add(us)
+        db.session.commit()
+        data_msg=Massage.query.all()
+        roomto=room.query.all()
+        return render_template("chat.html", username=current_user, rooms=roomto , mas_from_db=data_msg ,ro_gl= ro_m)
+    except Exception as e:
+        print(e)
+        data_msg=Massage.query.all()
+        roomto=room.query.all()
+        return render_template("chat.html", username=current_user, rooms=roomto, mas_from_db=data_msg ,ro_gl= ro_m)
 
 
 @app.route("/chatsend", methods=['GET', 'POST'])
-def chatsend():
+def chatsend(i_d):
     if not current_user.is_authenticated:
         flash('Please login', 'danger')
         return redirect(url_for('login'))
@@ -106,17 +128,21 @@ def chatsend():
          if request.method == 'POST':
                 f = request.files['file']
                 f.save(os.path.join(app.config['UPLOAD_FOLDER'],f.filename))
-                msg=f.filename
+                msg=os.path.join(app.config['UPLOAD_FOLDER'],f.filename)
                 time_stamp = time.strftime('%b-%d %I:%M%p', time.localtime())
-                us=Massage(msg_db=msg , user_id=current_user.id ,user_name=current_user.username ,time_db=time_stamp )
+                data=room.query.filter_by(room=i_d).first()
+                us=Massage(msg_db=msg , user_id=current_user.id ,user_name=current_user.username , time_db=time_stamp , room=ro_m )
                 db.session.add(us)
                 db.session.commit()
          data_msg=Massage.query.all()
-         return render_template("chat.html", username=current_user, rooms=ROOMS , mas_from_db=data_msg )
+         roomto=room.query.all()
+         return render_template("chat.html", username=current_user, rooms=roomto, mas_from_db=data_msg ,ro_gl= ro_m)
     except Exception as e:
         print(e)
         data_msg=Massage.query.all()
-        return render_template("chat.html", username=current_user, rooms=ROOMS , mas_from_db=data_msg )
+        roomto=room.query.all()
+        return render_template("chat.html", username=current_user, rooms=roomto , mas_from_db=data_msg ,ro_gl=ro_m)
+
 
 @app.route("/profile", methods=['GET', 'POST'])
 def profile():
@@ -134,40 +160,41 @@ def profile_change():
     data=User_inf.query.filter_by(user_id=current_user.id).first()
     data2=User.query.filter_by(id=current_user.id).first()
     if data != None :
-        username=request.form['username']
-        password=request.form['Password']
-        numberphone=request.form['numberphone']
-        city=request.form['city']
-        email=request.form['email']
-        if username == "":
+       # global user__name , pass__word , number__phone , ci__ty , em__ail
+        user__name=request.form['username']
+        pass__word=request.form['Password']
+        number__phone=request.form['numberphone']
+        ci__ty=request.form['city']
+        em__ail=request.form['email']
+        if user__name == "":
             error="Enter Username "
             nexto_page = '/profile'
             nexto='next'
             return render_template('profile.html',error_e=error ,username=data2 ,data_pro=data, nexto=nexto, nexto_page = nexto_page)
-        elif password =="":
+        elif pass__word =="":
             nexto='next'
             nexto_page = '/profile'
             error="Enter Your Password"
             return render_template('profile.html',error_e=error ,username=data2 ,data_pro=data, nexto=nexto, nexto_page = nexto_page)
-        elif email =="":
+        elif em__ail =="":
             nexto='next'
             nexto_page = '/profile'
             error="Enter Your Email"
             return render_template('profile.html',error_e=error ,username=data2 ,data_pro=data, nexto=nexto, nexto_page = nexto_page)
-        elif city =="":
+        elif ci__ty =="":
             nexto='next'
             nexto_page = '/profile'
             error="Enter Your City"
             return render_template('profile.html',error_e=error ,username=data2 ,data_pro=data, nexto=nexto, nexto_page = nexto_page)
-        data = User_inf.query.filter_by(user_id=current_user.id).update(dict(namberphon=numberphone))
+        data = User_inf.query.filter_by(user_id=current_user.id).update(dict(namberphon=number__phone))
         db.session.commit()
-        data = User_inf.query.filter_by(user_id=current_user.id).update(dict(email=email))
+        data = User_inf.query.filter_by(user_id=current_user.id).update(dict(email=em__ail))
         db.session.commit()
-        data2 = User_inf.query.filter_by(user_id=current_user.id).update(dict(city=city))
+        data2 = User_inf.query.filter_by(user_id=current_user.id).update(dict(city=ci__ty))
         db.session.commit()
-        data2 = User.query.filter_by(id=current_user.id).update(dict(username=username))
+        data2 = User.query.filter_by(id=current_user.id).update(dict(username=user__name))
         db.session.commit()
-        data2 = User.query.filter_by(id=current_user.id).update(dict(hashed_pswd=password))
+        data2 = User.query.filter_by(id=current_user.id).update(dict(hashed_pswd=pass__word))
         db.session.commit()
         nexto= 'save'
         nexto_page = '/logout'
@@ -204,14 +231,12 @@ def profile_change():
             us=User_inf(namberphon=numberphone , email=email ,city=city, user_id=current_user.id)
             db.session.add(us)
             db.session.commit()
-            data2 = User.query.filter_by(id=current_user.id).update(dict(username=username))
-            db.session.commit()
-            data2 = User.query.filter_by(id=current_user.id).update(dict(hashed_pswd=password))
-            db.session.commit()
+            conn.close()
             nexto = 'save'
             nexto_page = '/logout'
             data=User_inf.query.filter_by(user_id=current_user.id).first()
             data2=User.query.filter_by(id=current_user.id).first()
+            conn.close()
             return render_template("profile.html",username=data2 ,data_pro=data, nexto=nexto,nexto_page=nexto_page)
    
 
@@ -231,7 +256,7 @@ def on_message(data):
         time_stamp = time.strftime('%b-%d %I:%M%p', time.localtime())
         # save message in database
         data=User.query.filter_by(username=username).first()
-        us=Massage(msg_db=msg , user_id=data.id ,user_name=username ,time_db=time_stamp )
+        us=Massage(msg_db=msg , user_id=data.id ,user_name=username ,time_db=time_stamp, room=room)
         db.session.add(us)
         db.session.commit()
         send({"username": username , "msg": msg, "time_stamp": time_stamp}, room=room)
@@ -240,8 +265,10 @@ def on_message(data):
 @socketio.on('join')
 def on_join(data):
     """User joins a room"""
+    global ro_m
     username = data["username"]
     room = data["room"]
+    ro_m = data["room"]
     join_room(room)
 
     # Broadcast that new user has joined

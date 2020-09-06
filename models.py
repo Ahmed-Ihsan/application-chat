@@ -7,7 +7,6 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "postgres://vwiuylbsciwkjp:1513a18759e0d
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] =False 
 db = SQLAlchemy(app)
 
-
 __tablename__ = "users"
 
 class User(UserMixin, db.Model):
@@ -15,6 +14,7 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(25), unique=True, nullable=False)
     hashed_pswd = db.Column(db.String(), nullable=False)
+    #room = db.Column(db.String(),unique=True, nullable=False)
    
 class User_inf(db.Model):
 	""" Massage model """
@@ -24,6 +24,12 @@ class User_inf(db.Model):
 	city = db.Column(db.String(), nullable=False)
 	user_id = db.Column(db.Integer,unique=True, nullable=False)
 
+class room(db.Model):
+	""" Massage model """
+	id = db.Column(db.Integer, primary_key=True)
+	room = db.Column(db.String(), nullable=False)
+	room_us = db.Column(db.Integer(), nullable=False)
+
 class Massage(db.Model):
 	""" Massage model """
 	id = db.Column(db.Integer, primary_key=True)
@@ -31,4 +37,4 @@ class Massage(db.Model):
 	user_id = db.Column(db.Integer, nullable=False)
 	user_name = db.Column(db.String(), nullable=False)
 	time_db = db.Column(db.String(), nullable=False)
-
+	room = db.Column(db.String(), nullable=False)

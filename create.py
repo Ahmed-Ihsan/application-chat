@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 from models import *
 
 app = Flask(__name__)
@@ -10,6 +11,9 @@ db.init_app(app)
 
 def main():
 	db.create_all()
+	us=room(room='lounge' , room_us=1)
+	db.session.add(us)
+	db.session.commit()
 if __name__ == "__main__":
     with app.app_context():
         main()

@@ -16,12 +16,6 @@
 
     <body>
         
-        <!-- Flash error messages -->
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <p class=formError>{{ messages[0] }}</p>
-            {% endif %}
-        {% endwith %}
 
         <div class="wrapper">
 
@@ -50,15 +44,23 @@
                 </div>
             </nav>
             <!-- Nav bar end -->
-
+             
             <!-- Main section start -->
             <div id="main-section">
-
                 <!-- Sidebar start -->
                 <nav id="sidebar">
+                        <form action = "/chatcreate" method = "POST" 
+         enctype = "multipart/form-data">
+         <input type = "text" name = "n" />
+         <input type = "submit"/>
+         </form>
+                   
+
                     <h4>Rooms</h4>
                     {% for room in rooms %}
-                        <p id="{{ room|title }}" class="select-room cursor-pointer">{{ room|title }}</p>
+                    {% if room.room_us == username.id or room.room in "lounge" %}
+                        <p id="{{ room.room|title }}" class="select-room cursor-pointer">{{ room.room|title }}</p>
+                    {% endif %}
                     {% endfor %}
                 </nav>
                 <!-- Sidebar end -->
@@ -66,15 +68,31 @@
                 <!-- Rightside pannel start -->
                 <div id="rightside-pannel">
                  <br><br><br>
-                    {% for ms_g in mas_from_db  %} {% if ms_g.user_id == username.id %}
-                    <p class="my-msg">
-                        <span class="my-username">{{ms_g.user_name}}</span>
-                        <br>{{ms_g.msg_db}}<br>
-                        <span class="timestamp">{{ms_g.time_db}}</span>
-                    </p>
+                    {% for ms_g in mas_from_db %}
+                    {% if ms_g.room in ro_gl %}
+                    {% if ms_g.user_id == username.id %}
+                                        {% if ".png" in ms_g.msg_db or ".jpg" in ms_g.msg_db %}
+                                            <p class="my-msg">
+                                                <span class="my-username">{{ms_g.user_name}}</span><br>
+                                                <img style="width: 500px" src="{{ ms_g.msg_db }}"><br>
+                                                <span class="timestamp">{{ms_g.time_db}}</span>
+                                            </p>
+                                        {% else %}
+                                            <p class="my-msg">
+                                                <span class="my-username">{{ms_g.user_name}}</span>
+                                                <br>{{ms_g.msg_db}}<br>
+                                                <span class="timestamp">{{ms_g.time_db}}</span>
+                                            </p>
+                                        {% endif %}
                     {% else %}
-                    <p class="others-msg"><span class="other-username">{{ms_g.user_name}}</span><br>{{ms_g.msg_db}}<br><span class="timestamp">{{ms_g.time_db}}</span></p>
-                    {% endif %}{% endfor %}
+                            {% if ".png" in ms_g.msg_db or ".jpg" in ms_g.msg_db %}
+                            <p class="others-msg"><span class="other-username">{{ms_g.user_name}}</span><br><img style="width: 500px" src="{{ ms_g.msg_db }}"> <br><span class="timestamp">{{ms_g.time_db}}</span></p>
+                            {% else %}
+                            <p class="others-msg"><span class="other-username">{{ms_g.user_name}}</span><br>{{ms_g.msg_db}}<br><span class="timestamp">{{ms_g.time_db}}</span></p>
+                            {% endif %}
+                    {% endif %}
+                    {% endif %}
+                    {% endfor %}
                     
                     <!-- Display message start-->
                     <div id="display-message-section">
@@ -83,7 +101,7 @@
                      
 
 
-                    <form action = "/chatsend" method = "POST" 
+                    <form action = "/chatsend/{{}}" method = "POST" 
          enctype = "multipart/form-data">
          <input type = "file" name = "file" />
          <input type = "submit"/>
