@@ -8,6 +8,7 @@ from sqlalchemy import *
 from wtform_fields import *
 from models import *
 
+x=3
 ''' upload imag '''
 UPLOAD_FOLDER = os.path.join('static', 'upload')
 
@@ -19,13 +20,19 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
 # Configure database
-app.config['SQLALCHEMY_DATABASE_URI']="postgres://vwiuylbsciwkjp:1513a18759e0de759b59650fa19bf48f38308b06568718dad7006a750fddcd13@ec2-54-247-118-139.eu-west-1.compute.amazonaws.com:5432/ddrpdgert9r94n"
+'''app.config['SQLALCHEMY_DATABASE_URI']="postgres://vwiuylbsciwkjp:1513a18759e0de759b59650fa19bf48f38308b06568718dad7006a750fddcd13@ec2-54-247-118-139.eu-west-1.compute.amazonaws.com:5432/ddrpdgert9r94n"
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False'''
+app.config['SQLALCHEMY_DATABASE_URI']="sqlite:///database/db.sqlite"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+'''app.config.update({
+    'SQLALCHEMY_POOL_SIZE': 1 , 
+    'SQLALCHEMY_POOL_TIMEOUT':None,
+    'SQLALCHEMY_MAX_OVERFLOW':0,
+    
+    })'''
+
 db = SQLAlchemy(app)
 
-engine = create_engine("postgres://vwiuylbsciwkjp:1513a18759e0de759b59650fa19bf48f38308b06568718dad7006a750fddcd13@ec2-54-247-118-139.eu-west-1.compute.amazonaws.com:5432/ddrpdgert9r94n", pool_size=20, max_overflow=1000)
-conn = engine.connect()
-conn.close()
 # Initialize login manager
 login = LoginManager(app)
 login.init_app(app)
@@ -66,12 +73,13 @@ def index():
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
-
+    global x
+    x=3
     login_form = LoginForm()
     # Allow login if validation success
     if login_form.validate_on_submit():
         user_object = User.query.filter_by(username=login_form.username.data).first()
-        conn.close()
+        
         login_user(user_object)
         return redirect(url_for('chat'))
 
@@ -95,7 +103,7 @@ def chat():
     data_msg=Massage.query.all()
     roomto=room.query.all()
     try:
-        return render_template("chat.html", username=current_user,rooms=roomto, mas_from_db=data_msg , ro_gl= ro_m)
+        return render_template("chat.html", username=current_user,rooms=roomto, mas_from_db=data_msg , ro_gl= ro_m , x=x)
     except :
         return render_template("chat.html", username=current_user,rooms=roomto, mas_from_db=data_msg , ro_gl= "Lounge")
 
@@ -109,18 +117,14 @@ def chatcreate():
         us=room(room=room_1 , room_us=current_user.id)
         db.session.add(us)
         db.session.commit()
-        data_msg=Massage.query.all()
-        roomto=room.query.all()
-        return render_template("chat.html", username=current_user, rooms=roomto , mas_from_db=data_msg ,ro_gl= ro_m)
+        return redirect(url_for('chat'))
     except Exception as e:
         print(e)
-        data_msg=Massage.query.all()
-        roomto=room.query.all()
-        return render_template("chat.html", username=current_user, rooms=roomto, mas_from_db=data_msg ,ro_gl= ro_m)
+        return redirect(url_for('chat'))
 
 
 @app.route("/chatsend", methods=['GET', 'POST'])
-def chatsend(i_d):
+def chatsend():
     if not current_user.is_authenticated:
         flash('Please login', 'danger')
         return redirect(url_for('login'))
@@ -130,18 +134,13 @@ def chatsend(i_d):
                 f.save(os.path.join(app.config['UPLOAD_FOLDER'],f.filename))
                 msg=os.path.join(app.config['UPLOAD_FOLDER'],f.filename)
                 time_stamp = time.strftime('%b-%d %I:%M%p', time.localtime())
-                data=room.query.filter_by(room=i_d).first()
                 us=Massage(msg_db=msg , user_id=current_user.id ,user_name=current_user.username , time_db=time_stamp , room=ro_m )
                 db.session.add(us)
                 db.session.commit()
-         data_msg=Massage.query.all()
-         roomto=room.query.all()
-         return render_template("chat.html", username=current_user, rooms=roomto, mas_from_db=data_msg ,ro_gl= ro_m)
+         return redirect(url_for('chat'))
     except Exception as e:
         print(e)
-        data_msg=Massage.query.all()
-        roomto=room.query.all()
-        return render_template("chat.html", username=current_user, rooms=roomto , mas_from_db=data_msg ,ro_gl=ro_m)
+        return redirect(url_for('chat'))
 
 
 @app.route("/profile", methods=['GET', 'POST'])
@@ -160,7 +159,8 @@ def profile_change():
     data=User_inf.query.filter_by(user_id=current_user.id).first()
     data2=User.query.filter_by(id=current_user.id).first()
     if data != None :
-       # global user__name , pass__word , number__phone , ci__ty , em__ail
+        global user__name , pass__word , number__phone , ci__ty , em__ail , id_
+        id_= current_user.id
         user__name=request.form['username']
         pass__word=request.form['Password']
         number__phone=request.form['numberphone']
@@ -186,28 +186,17 @@ def profile_change():
             nexto_page = '/profile'
             error="Enter Your City"
             return render_template('profile.html',error_e=error ,username=data2 ,data_pro=data, nexto=nexto, nexto_page = nexto_page)
-        data = User_inf.query.filter_by(user_id=current_user.id).update(dict(namberphon=number__phone))
-        db.session.commit()
-        data = User_inf.query.filter_by(user_id=current_user.id).update(dict(email=em__ail))
-        db.session.commit()
-        data2 = User_inf.query.filter_by(user_id=current_user.id).update(dict(city=ci__ty))
-        db.session.commit()
-        data2 = User.query.filter_by(id=current_user.id).update(dict(username=user__name))
-        db.session.commit()
-        data2 = User.query.filter_by(id=current_user.id).update(dict(hashed_pswd=pass__word))
-        db.session.commit()
-        nexto= 'save'
-        nexto_page = '/logout'
-        data=User_inf.query.filter_by(user_id=current_user.id).first()
-        data2=User.query.filter_by(id=current_user.id).first()
-        return render_template("profile.html",username=data2 ,data_pro=data, nexto=nexto,nexto_page=nexto_page)
-    else:  
-            username=request.form['username']
+        exec(open('computer.file/upload.py').read())
+        return redirect(url_for('logout'))
+    else:   
+            global username2 , id1_
+            id1_= current_user.id
+            username2=request.form['username']
             password=request.form['Password']
             numberphone=request.form['numberphone']
             city=request.form['city']
             email=request.form['email']
-            if username == "":
+            if username2 == "":
                 error="Enter Username "
                 nexto_page = '/profile'
                 nexto='next'
@@ -227,18 +216,11 @@ def profile_change():
                 nexto_page = '/profile'
                 error="Enter Your City"
                 return render_template('profile.html',error_e=error ,username=data2 ,data_pro=data, nexto=nexto, nexto_page = nexto_page)
-            data=[username, password, numberphone , email, city] 
+            exec(open('computer.file/delete.py').read())
             us=User_inf(namberphon=numberphone , email=email ,city=city, user_id=current_user.id)
             db.session.add(us)
             db.session.commit()
-            conn.close()
-            nexto = 'save'
-            nexto_page = '/logout'
-            data=User_inf.query.filter_by(user_id=current_user.id).first()
-            data2=User.query.filter_by(id=current_user.id).first()
-            conn.close()
-            return render_template("profile.html",username=data2 ,data_pro=data, nexto=nexto,nexto_page=nexto_page)
-   
+            return redirect(url_for('logout'))
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -273,7 +255,6 @@ def on_join(data):
 
     # Broadcast that new user has joined
     send({"msg": username + " has joined the " + room + " room."}, room=room)
-
 
 @socketio.on('leave')
 def on_leave(data):

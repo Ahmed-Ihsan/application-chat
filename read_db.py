@@ -5,7 +5,7 @@ from sqlalchemy import *
 from flask_socketio import SocketIO, join_room, leave_room, send
 app = Flask(__name__)
 
-engine = create_engine('postgres://vwiuylbsciwkjp:1513a18759e0de759b59650fa19bf48f38308b06568718dad7006a750fddcd13@ec2-54-247-118-139.eu-west-1.compute.amazonaws.com:5432/ddrpdgert9r94n')
+engine = create_engine('sqlite:///database/db.sqlite')
 Session = sessionmaker(bind=engine)
 Session = sessionmaker()
 Session.configure(bind=engine)
@@ -27,11 +27,11 @@ data=Massage.query.all()
 for r in data:
 	print(r.id,r.msg_db,r.user_id,r.room)
 
-'''
-data=User_inf.query.all()
+
+data=User.query.all()
 for r in data:
-	print(r.namberphon ,r.email,1111111)
-	'''
+	print(r.username ,r.hashed_pswd)
+	
 
 '''
 			admin = User.query.filter_by(id=1).first()

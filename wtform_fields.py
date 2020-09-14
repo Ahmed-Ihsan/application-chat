@@ -37,6 +37,6 @@ class RegistrationForm(FlaskForm):
 
 class LoginForm(FlaskForm):
     """ Login form """
-
     username = StringField('username', validators=[InputRequired(message="Username required")])
     password = PasswordField('password', validators=[InputRequired(message="Password required"), invalid_credentials])
+

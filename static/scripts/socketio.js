@@ -6,9 +6,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Retrieve username
     const username = document.querySelector('#get-username').innerHTML;
 
-    // Set default room
-    let room = "Lounge"
-    joinRoom("Lounge");
+    // Set default room 
+    let roomchaic=sessionStorage.getItem("room");
+    if ( roomchaic == null) {
+    sessionStorage.setItem("room", "Lounge");
+    var room=sessionStorage.getItem("room");
+    joinRoom(room); }
+    else{
+      var room=sessionStorage.getItem("room");
+      document.getElementById("result").innerHTML = room ;
+      joinRoom(room);
+    }
+    
 
     // Send messages
     document.querySelector('#send_message').onclick = () => {
@@ -85,6 +94,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 leaveRoom(room);
                 joinRoom(newRoom);
                 room = newRoom;
+                sessionStorage.setItem("room", room);
+                location.reload()
+                
             }
         };
     });
@@ -114,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('#' + CSS.escape(room)).style.backgroundColor = "white";
 
         // Clear message area
-        document.querySelector('#display-message-section').innerHTML = '';
+        //document.querySelector('#display-message-section').innerHTML = '';
 
         // Autofocus on text box
         document.querySelector("#user_message").focus();
@@ -139,11 +151,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-/*
-function photo() {
 
-    var oo="{{ url_for('static', filename='styles/" + photo+"') }}"
-  document.getElementById("demo").src = oo;
-
-}
-*/

@@ -10,6 +10,15 @@
         <!-- Bootstrap -->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 
+         <!-- Custom chat JS -->
+        <script src="{{ url_for('static', filename='scripts/chat_page.js') }}"></script>
+
+        <!-- SocketIO JS -->
+        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+
+        <!-- Custom SocketIO JS -->
+        <script src="{{ url_for('static', filename='scripts/socketio.js') }}"></script>
+
         <!-- Custom css for chat pages -->
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/chat_style.css') }}">
     </head>
@@ -25,9 +34,11 @@
                 <div class="container-fluid">
                     <div id="show-sidebar-button" class="cursor-pointer">
                         <i class="fas fa-plus-circle "></i>
-                        <span>Rooms</span>
+                        <span >Rooms</span>
+                        <div id="result"></div>
                     </div>
-
+                    <script type="text/javascript">
+                    </script>
                     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                     </button>
@@ -54,24 +65,23 @@
          <input type = "text" name = "n" />
          <input type = "submit"/>
          </form>
-                   
-
                     <h4>Rooms</h4>
                     {% for room in rooms %}
                     {% if room.room_us == username.id or room.room in "lounge" %}
                         <p id="{{ room.room|title }}" class="select-room cursor-pointer">{{ room.room|title }}</p>
+                   
                     {% endif %}
                     {% endfor %}
                 </nav>
                 <!-- Sidebar end -->
-
                 <!-- Rightside pannel start -->
                 <div id="rightside-pannel">
-                 <br><br><br>
+                    <!-- Display message start-->
+                    <div id="display-message-section">
                     {% for ms_g in mas_from_db %}
                     {% if ms_g.room in ro_gl %}
                     {% if ms_g.user_id == username.id %}
-                                        {% if ".png" in ms_g.msg_db or ".jpg" in ms_g.msg_db %}
+                                {% if ".png" in ms_g.msg_db or ".jpg" in ms_g.msg_db %}
                                             <p class="my-msg">
                                                 <span class="my-username">{{ms_g.user_name}}</span><br>
                                                 <img style="width: 500px" src="{{ ms_g.msg_db }}"><br>
@@ -93,15 +103,12 @@
                     {% endif %}
                     {% endif %}
                     {% endfor %}
-                    
-                    <!-- Display message start-->
-                    <div id="display-message-section">
                     </div>
                     <!-- Display message end -->
                      
 
 
-                    <form action = "/chatsend/{{}}" method = "POST" 
+                    <form action = "/chatsend" method = "POST" 
          enctype = "multipart/form-data">
          <input type = "file" name = "file" />
          <input type = "submit"/>
@@ -125,15 +132,7 @@
         <!-- Get username -->
         <span id="get-username">{{username.username}}</span>
 
-        <!-- Custom chat JS -->
-        <script src="{{ url_for('static', filename='scripts/chat_page.js') }}"></script>
-
-        <!-- SocketIO JS -->
-        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
-
-        <!-- Custom SocketIO JS -->
-        <script src="{{ url_for('static', filename='scripts/socketio.js') }}"></script>
-
+       
         <!-- Bootstrap -->
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
